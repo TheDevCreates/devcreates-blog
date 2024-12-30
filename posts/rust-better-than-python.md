@@ -49,3 +49,6 @@ Rust is for **power** users who want speed + safety. Python’s great for protot
 Py’s okay for quick scripts & ML libs, but Rust is the **real MVP** for any srs bsns.  
 
 > Sorry Python, but Rust flexes harder. 🦀 :muscle:
+
+
+// I deny this, python is better 
