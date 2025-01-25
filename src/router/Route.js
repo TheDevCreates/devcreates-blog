@@ -1,58 +1,68 @@
 async function Route(view) {
+  // update the hash in the url
   window.location.hash = view
   Unload("Section")
   ProgressBar(25)
 
-  // Allow URLs ending in a slash
-  if(view.endsWith('/')) {
-    let lastIndex = view.lastIndexOf('/');
-    view =
-      view.slice(0, lastIndex) +
-      '' +
-      view.slice(lastIndex + 1);
+  // remove trailing slash if present
+  if (view.endsWith('/')) {
+    view = view.slice(0, -1)
   }
 
+  // map the views to their sections
+  const routes = {
+    "": "./src/components/sections/RootSection.js",
+    "#": "./src/components/sections/RootSection.js",
+    "#blog": "./src/components/sections/BlogSection.js",
+    "#about": "./src/components/sections/AboutSection.js",
+    "#read": "./src/components/sections/ReadSection.js",
+    "#read/": "./src/components/sections/ReadSection.js"
+  }
 
-  // #
-  if(view == "" || view == "#") {
-    return Import("./src/components/sections/RootSection.js", "Section", function() {
+  // define what happens after each section is loaded
+  const routeHandler = {
+    "": () => {
       App.innerHTML = `${RootSection()}`
       ModifyAppTitle("home")
       Effects()
       ProgressBar(100)
-    })
-  }
-
-  // #blog
-  if(view == "#blog") {
-    return Import("./src/components/sections/BlogSection.js", "Section", function() {
+    },
+    "#": () => {
+      App.innerHTML = `${RootSection()}`
+      ModifyAppTitle("home")
+      Effects()
+      ProgressBar(100)
+    },
+    "#blog": () => {
       App.innerHTML = `${BlogSection()}`
       ModifyAppTitle("posts")
       Effects()
       ProgressBar(100)
-    })
-  }
-
-  // #read
-  if(view == "#read" || view.startsWith("#read/")) {
-    return Import("./src/components/sections/ReadSection.js", "Section", async function() {
-      ProgressBar(65)
-      App.innerHTML = `${await ReadSection()}`
-      Effects()
-    })
-  }
-
-  // #about
-  if(view == "#about") {
-    return Import("./src/components/sections/AboutSection.js", "Section", function() {
+    },
+    "#about": () => {
       App.innerHTML = `${AboutSection()}`
       ModifyAppTitle("about")
       Effects()
       ProgressBar(100)
-    })
+    },
+    "#read": async () => {
+      ProgressBar(65)
+      App.innerHTML = `${await ReadSection()}`
+      Effects()
+    },
+    "#read/": async () => {
+      ProgressBar(65)
+      App.innerHTML = `${await ReadSection()}`
+      Effects()
+    }
   }
 
-  // #404
+  // if the view matches, load the section
+  if (routes[view]) {
+    return Import(routes[view], "Section", routeHandler[view])
+  }
+
+  // if not found, show 404 page
   console.warn(`404: ${view} not found.`)
   return Import("./src/components/sections/NotfoundSection.js", "Section", function() {
     App.innerHTML = `${NotfoundSection()}`
@@ -62,13 +72,13 @@ async function Route(view) {
   })
 }
 
+// listen for changes in the url hash
 window.addEventListener("hashchange", function() {
   Route(window.location.hash)
-});
+})
 
+// add ripple effect to elements
 function Effects() {
-  const rippleSurface = Array.prototype.slice.call(document.querySelectorAll('.ripple-surface'))
-  rippleSurface.map(s => {
-    return new mdc.ripple.MDCRipple(s)
-  })
+  const rippleSurface = Array.from(document.querySelectorAll('.ripple-surface'))
+  rippleSurface.forEach(s => new mdc.ripple.MDCRipple(s))
 }
